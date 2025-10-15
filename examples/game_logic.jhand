@@ -1,0 +1,22 @@
+# game_logic.jhand
+se_laao random laao randint
+
+bhenchod Game:
+    naya_kutta(self, players):
+        self.players = players
+
+    bhenchod play_game(self):
+        bol("🎮 Game Shuru ho gaya BC!")
+        jabtak haaan:
+            player = self.players[randint(0, len(self.players)-1)]
+            damage = randint(5, 20)
+            player.hp = max(player.hp - damage, 0)
+            bol(f"{player.name} ko {damage} damage laga. HP ab: {player.hp}")
+            # Check agar koi mar gaya
+            agar player.hp <= 0:
+                bol(f"{player.name} mar gaya 😭")
+                self.players.remove(player)
+            # Break agar sirf ek bacha
+            agar len(self.players) <= 1:
+                bol(f"🏆 {self.players[0].name} jeet gaya!")
+                nikalja

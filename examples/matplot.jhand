@@ -1,0 +1,70 @@
+laao json
+laao functools
+laao pathlib
+
+# Ek basic helper jo factorial recursion karta hai (classic)
+bhenchod factorial(n):
+    agar n <= 1:
+        leja 1
+    leja n * factorial(n - 1)
+
+# Ek closure returning function
+bhenchod multiplier(factor):
+    bhenchod inner(x):
+        leja x * factor
+    leja inner
+
+# Data generate karo + transform karo
+bhenchod prepare_data():
+    nums = [1, 2, 3, 4, 5]
+    double = multiplier(2)
+    triple = multiplier(3)
+
+    transformed = []
+    haramkhor n in nums:
+        transformed.append({
+            "num": n,
+            "double": double(n),
+            "triple": triple(n),
+            "fact": factorial(n)
+        })
+
+    leja transformed
+
+# Sorting + reducing ek hi jagah
+bhenchod process_data(data):
+    
+    data.sort(key=lambda item: item["fact"], reverse=True)
+    
+    # Reduce to sum of doubles
+    total_double = functools.reduce(
+        lambda acc, item: acc + item["double"], data, 0
+    )
+
+    leja {"sorted": data, "total_double": total_double}
+
+# File mein likhna / phir wapas padhna
+bhenchod persist_and_load(obj):
+    path = pathlib.Path("jhand_test.json")
+    with open(str(path), "w", encoding="utf-8") as f:
+        json.dump(obj, f, indent=2)
+
+    with open(str(path), "r", encoding="utf-8") as f:
+        leja json.load(f)
+
+# MAIN
+bhenchod main():
+    bol("🚀 Starting 'Simple-but-Complex' JHAND Demo")
+
+    data = prepare_data()
+    bol(f"Data ready: {data}")
+
+    processed = process_data(data)
+    bol(f"Processed: {processed}")
+
+    persisted = persist_and_load(processed)
+    bol(f"File reload check: {persisted}")
+
+    bol("✅ Demo completed successfully")
+
+main()

@@ -1,0 +1,14 @@
+README.md
+setup.py
+jhand/__init__.py
+jhand/cli.py
+jhand/lexer.py
+jhand/parser.py
+jhand/runtime.py
+jhand/transpiler.py
+jhand_lang.egg-info/PKG-INFO
+jhand_lang.egg-info/SOURCES.txt
+jhand_lang.egg-info/dependency_links.txt
+jhand_lang.egg-info/entry_points.txt
+jhand_lang.egg-info/not-zip-safe
+jhand_lang.egg-info/top_level.txt

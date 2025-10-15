@@ -1,0 +1,98 @@
+# ================================
+# 🧠 Dynamic Imports + Error Injection
+# ================================
+laao importlib
+laao threading
+laao time
+laao random
+laao datetime
+
+# runtime per libraries load karo dynamically
+libs = ["math", "functools", "itertools"]
+haramkhor lib in libs:
+    mod = importlib.import_module(lib)
+    bol(f"📦 {lib} module dynamically import hogya")
+
+# ================================
+# 🪄 Meta Decorator (Function ko warp karna)
+# ================================
+madarchod MetaWand:
+    bhenchod __call__(self, func):
+        bhenchod wrapped(*args, **kwargs):
+            bol(f"✨ '{func.__name__}' ko warp kia jaa raha hai")
+            result = func(*args, **kwargs)
+            bol(f"🔮 Result aaya: {result}")
+            leja result
+        leja wrapped
+
+# decorator define
+MetaWand()
+
+# ================================
+# 🧠 Recursive Generator (Fractal Series)
+# ================================
+#warp
+bhenchod fractal_gen(n, base=1):
+    agar n == 0:
+        leja
+    warna:
+        bol(f"🌿 {base} — fractal step")
+        yield base
+        haramkhor x in fractal_gen(n-1, base*2):
+            yield x
+        haramkhor y in fractal_gen(n-1, base*3):
+            yield y
+
+# ================================
+# 🕓 Concurrency + Time Loop
+# ================================
+bhenchod time_loop(label, delay):
+    haramkhor i in range(3):
+        bol(f"{label} — quantum tick {i}")
+        time.sleep(delay)
+
+threads = [
+    threading.Thread(target=time_loop, args=("🧠 Main Thread", 0.3)),
+    threading.Thread(target=time_loop, args=("🚀 Parallel 1", 0.5)),
+    threading.Thread(target=time_loop, args=("🌌 Parallel 2", 0.7))
+]
+
+haramkhor t in threads:
+    t.start()
+
+# ================================
+# 🧨 Intentional Errors for Testing Roast System
+# ================================
+koshish:
+    bol(1 / 0)  # ZeroDivisionError
+phaansi ZeroDivisionError:
+    bol("😈 Time loop mein division by zero daal diya")
+
+koshish:
+    kuch_nahi()  # NameError
+phaansi NameError:
+    bol("🤡 Undefined function call pakri gayi")
+
+# ================================
+# 🌀 Fractal Generator Use
+# ================================
+fractal_numbers = [ ]
+haramkhor value in fractal_gen(3):
+    fractal_numbers.append(value)
+bol(f"🌀 Fractal Sequence: {fractal_numbers}")
+
+# ================================
+# 🧠 Dynamic Code Execution (eval)
+# ================================
+exprs = ["2+2", "'Saad'[::-1]", "len(fractal_numbers) * 10"]
+haramkhor ex in exprs:
+    result = eval(ex)
+    bol(f"🧮 Expression '{ex}' → {result}")
+
+# ================================
+# 🏁 Wait for Threads
+# ================================
+haramkhor t in threads:
+    t.join()
+
+bol("🌟 Quantum JHAND Code Execution Complete ✅")

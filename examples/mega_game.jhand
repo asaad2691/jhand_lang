@@ -1,0 +1,57 @@
+laao random
+
+madarchod Hero:
+    naya_kutta __init__(self, name, hp):
+        self.name = name
+        self.hp = hp
+        self.items = []
+
+    bhenchod attack(self, target):
+        dmg = random.randint(5, 15)
+        target.hp = target.hp - dmg
+        bol(f"{self.name} ne {target.name} ko {dmg} damage diya!")
+        agar target.hp <= 0:
+            target.hp = 0
+            bol(f"{target.name} gir gaya! 💀")
+
+    bhenchod heal(self):
+        amt = random.randint(5, 20)
+        self.hp = self.hp + amt
+        agar self.hp > 100:
+            self.hp = 100
+        bol(f"{self.name} heal ho gaya {self.hp} HP 💚")
+
+madarchod Game:
+    naya_kutta __init__(self, heroes):
+        self.heroes = heroes
+        
+        
+    bhenchod start(self):
+        bol("⚔️ Fight Start ⚔️")
+        jabtak haaan:
+            haramkhor idx in range(len(self.heroes)):
+                h = self.heroes[idx]
+                agar h.hp <= 0:
+                    lagateraha
+                action = random.randint(1, 3)
+                agar action == 1:
+                    targets = [x for x in self.heroes agar x != h and x.hp > 0]
+                    agar targets:
+                        target = random.choice(targets)
+                        h.attack(target)
+                ele action == 2:
+                    h.heal()
+                warna:
+                    bol(f"{h.name} wait kar raha hai... 🤔")
+
+            agar sum(h.hp for h in self.heroes) <= 0:
+                bol("Sab heroes gir gaye! 💀")
+                nikalja
+
+# Main Program
+h1 = Hero("Saad", 100)
+h2 = Hero("Ali", 80)
+h3 = Hero("Sara", 90)
+
+g = Game([h1, h2, h3])
+g.start()

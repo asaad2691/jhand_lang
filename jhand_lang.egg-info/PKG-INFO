@@ -1,0 +1,48 @@
+Metadata-Version: 2.4
+Name: jhand-lang
+Version: 0.1.0
+Summary: JHAND Language – Galiyon mein likha, duniya mein chhaya 💥
+Home-page: https://github.com/sadran/jhand-lang
+Author: Sadran
+Author-email: no-reply@jhand-lang.dev
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: JHAND
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Software Development :: Compilers
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: requires-python
+Dynamic: summary
+
+# 🧠 JHAND Language 🧠  
+> “Galiyon mein likho, duniya ko hilao.” – *Sadran*
+
+JHAND is a **full-stack abusive programming language** that turns your rage into runtime.  
+Built on top of a solid engine, this language compiles desi gali code into functional programs 🧨
+
+---
+
+## ✨ Features
+
+- 🔥 **Full OOP** support — classes, functions, loops, exceptions... sab kuch!
+- 🧠 **Gali-to-Logic Transpilation** — likho `bhenchod` aur ban jaaye `def`.
+- 💥 **Roasting Runtime** — jab error aata hai to sirf crash nahi... banday ki rooh tak hilti hai.
+- ⚡ **Python interoperability** — andar hi andar Python libraries use kar sakte ho, bahar sirf JHAND.
+
+---
+
+## 🛠 Installation
+
+Clone this repo and install:
+
+```bash
+git clone https://github.com/sadran/jhand-lang.git
+cd jhand-lang
+pip install .

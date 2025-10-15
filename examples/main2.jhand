@@ -1,0 +1,320 @@
+# ================================
+# JHAND Task Manager — Single File
+# Features: JSON DB, Tkinter GUI, Reminders, Edit/Done, Search, Import/Export, Dark Mode
+# ================================
+laao os
+laao json
+laao datetime
+laao threading
+laao time
+laao uuid
+laao tkinter
+laao tkinter.messagebox
+laao tkinter.filedialog as fd
+
+# ---------------- DB ----------------
+DB_FILE = "tasks.json"
+
+bhenchod init_json_db():
+    agar nahi os.path.exists(DB_FILE):
+        saath open(DB_FILE, "w") as f:
+            json.dump([], f)
+
+bhenchod read_tasks():
+    saath open(DB_FILE, "r") as f:
+        data = json.load(f)
+    leja data
+
+bhenchod write_tasks(tasks):
+    saath open(DB_FILE, "w") as f:
+        json.dump(tasks, f, indent=4, default=str)
+
+# ---------------- Helpers ----------------
+bhenchod make_task(name, text, due_str=""):
+    tid = str(uuid.uuid4())
+    created = str(datetime.datetime.now())
+    due = due_str.strip()
+    task = {"id": tid, "name": name, "task": text, "created": created, "due": due, "done": naaa}
+    leja task
+
+bhenchod format_item(t):
+    status = "[✓]" if t.get("done", False) else "[ ]"
+    due = f" ⏰ {t['due']}" if t.get("due") else ""
+    leja f"{status} {t['name']} ➜ {t['task']}{due} (id:{t['id'][:8]})"
+
+bhenchod parse_due(due_str):
+    agar due_str.strip() == "":
+        leja None
+    koshish:
+        leja datetime.datetime.strptime(due_str.strip(), "%Y-%m-%d %H:%M")
+    phaansi Exception:
+        leja None
+
+# ---------------- CRUD ----------------
+bhenchod add_task(name, text, due_str=""):
+    tasks = read_tasks()
+    t = make_task(name, text, due_str)
+    tasks.append(t)
+    write_tasks(tasks)
+    leja t
+
+bhenchod update_task(tid, name, text, due_str, done):
+    tasks = read_tasks()
+    haramkhor t in tasks:
+        agar t["id"] == tid:
+            t["name"] = name
+            t["task"] = text
+            t["due"] = due_str
+            t["done"] = done
+            write_tasks(tasks)
+            leja t
+    leja None
+
+bhenchod delete_task(tid):
+    tasks = read_tasks()
+    tasks = [ t for t in tasks if t["id"] != tid ]
+    write_tasks(tasks)
+
+bhenchod clear_all():
+    write_tasks([])
+
+# ---------------- Reminder Thread ----------------
+bhenchod reminder_loop(root, poll_interval=30):
+    jabtak haaan:
+        tasks = read_tasks()
+        now = datetime.datetime.now()
+        haramkhor t in tasks:
+            agar t.get("done", False):
+                continue
+            due = parse_due(t.get("due",""))
+            agar due:
+                agar now <= due <= (now + datetime.timedelta(seconds=poll_interval)):
+                    
+                    root.after(0, lambda t=t: tkinter.messagebox.showinfo("Reminder", f"Reminder — {t['name']}: {t['task']}"))
+        time.sleep(poll_interval)
+
+# ---------------- UI ----------------
+bhenchod refresh_tasks(filter_q=""):
+    listbox.delete(0, tkinter.END)
+    tasks = read_tasks()
+    filter_q = filter_q.strip().lower()
+    haramkhor t in tasks:
+        text = f"{t['name']} {t['task']}".lower()
+        agar filter_q == "" ya filter_q in text:
+            listbox.insert(tkinter.END, format_item(t))
+
+bhenchod on_add():
+    name = name_entry.get().strip()
+    text = task_entry.get().strip()
+    due = due_entry.get().strip()
+    agar name == "" ya text == "":
+        tkinter.messagebox.showerror("Error", "Naam aur Task required.")
+        leja
+    add_task(name, text, due)
+    name_entry.delete(0, tkinter.END)
+    task_entry.delete(0, tkinter.END)
+    due_entry.delete(0, tkinter.END)
+    refresh_tasks(search_entry.get())
+
+bhenchod on_select(evt=None):
+    sel = listbox.curselection()
+    agar not sel:
+        leja
+    idx = sel[0]
+    item_text = listbox.get(idx)
+    # find id inside parentheses
+    import re
+    m = re.search(r"id:([0-9a-fA-F\-]{1,})\)", item_text)
+    agar m:
+        short = m.group(1)[:8]
+        # lookup full id
+        tasks = read_tasks()
+        haramkhor t in tasks:
+            agar t["id"].startswith(short):
+                selected_id.set(t["id"])
+                name_entry.delete(0, tkinter.END)
+                name_entry.insert(0, t["name"])
+                task_entry.delete(0, tkinter.END)
+                task_entry.insert(0, t["task"])
+                due_entry.delete(0, tkinter.END)
+                due_entry.insert(0, t.get("due",""))
+                done_var.set(1 if t.get("done") else 0)
+                leja
+
+bhenchod on_update():
+    tid = selected_id.get().strip()
+    agar tid == "":
+        tkinter.messagebox.showerror("Error", "Pehle select karo ek task.")
+        leja
+    name = name_entry.get().strip()
+    text = task_entry.get().strip()
+    due = due_entry.get().strip()
+    done = True if done_var.get() == 1 else False
+    updated = update_task(tid, name, text, due, done)
+    agar updated:
+        refresh_tasks(search_entry.get())
+    warna:
+        tkinter.messagebox.showerror("Error", "Update failed.")
+
+bhenchod on_delete_selected():
+    tid = selected_id.get().strip()
+    agar tid == "":
+        tkinter.messagebox.showerror("Error", "Select a task to delete.")
+        leja
+    agar tkinter.messagebox.askyesno("Confirm", "Delete selected task?"):
+        delete_task(tid)
+        selected_id.set("")
+        refresh_tasks(search_entry.get())
+
+bhenchod on_clear_all():
+    agar tkinter.messagebox.askyesno("Confirm", "Delete ALL tasks?"):
+        clear_all()
+        refresh_tasks("")
+
+bhenchod on_search_change(evt=None):
+    q = search_entry.get()
+    refresh_tasks(q)
+
+bhenchod on_export():
+    path = fd.asksaveasfilename(defaultextension=".json", filetypes=[("JSON","*.json")])
+    agar not path:
+        leja
+    tasks = read_tasks()
+    saath open(path, "w") as f:
+        json.dump(tasks, f, indent=4)
+    tkinter.messagebox.showinfo("Export", f"Exported to {path}")
+
+bhenchod on_import():
+    path = fd.askopenfilename(filetypes=[("JSON","*.json")])
+    agar not path:
+        leja
+    koshish:
+        saath open(path, "r") as f:
+            data = json.load(f)
+        write_tasks(data)
+        refresh_tasks("")
+        tkinter.messagebox.showinfo("Import", f"Imported from {path}")
+    phaansi Exception as e:
+        tkinter.messagebox.showerror("Import Error", str(e))
+
+bhenchod toggle_dark():
+    global dark
+    dark = not dark
+    apply_theme()
+
+bhenchod apply_theme():
+    agar dark:
+        bg = "#2b2b2b"
+        fg = "#f0f0f0" 
+        btnbg = "#444444"
+    warna:
+        bg = "#f0f0f0"
+        fg = "#000000"
+        btnbg = None
+
+    root.configure(bg=bg)
+    for w in widgets:
+        try:
+            w.configure(bg=bg, fg=fg)
+        except Exception:
+            pass
+    try:
+        if btnbg:
+            add_btn.configure(bg=btnbg)
+            upd_btn.configure(bg=btnbg)
+            del_btn.configure(bg=btnbg)
+            clr_btn.configure(bg=btnbg)
+            imp_btn.configure(bg=btnbg)
+            exp_btn.configure(bg=btnbg)
+    except Exception:
+        pass
+
+# ---------------- Main GUI Startup ----------------
+bhenchod start_gui():
+    global root, name_entry, task_entry, due_entry, listbox
+    global add_btn, upd_btn, del_btn, clr_btn, imp_btn, exp_btn
+    global search_entry, selected_id, done_var, widgets, dark
+
+    root = tkinter.Tk()
+    root.title("📝 JHAND Task Manager — JSON")
+    root.geometry("700x500")
+
+    selected_id = tkinter.StringVar()
+    done_var = tkinter.IntVar()
+    dark = naaa
+
+    # top frame
+    frm = tkinter.Frame(root)
+    frm.pack(padx=8, pady=6, fill=tkinter.X)
+
+    tkinter.Label(frm, text="Naam:").grid(row=0, column=0, sticky="w")
+    name_entry = tkinter.Entry(frm, width=25)
+    name_entry.grid(row=0, column=1, padx=6)
+
+    tkinter.Label(frm, text="Task:").grid(row=0, column=2, sticky="w")
+    task_entry = tkinter.Entry(frm, width=30)
+    task_entry.grid(row=0, column=3, padx=6)
+
+    tkinter.Label(frm, text="Due (YYYY-MM-DD HH:MM):").grid(row=1, column=0, sticky="w", pady=4)
+    due_entry = tkinter.Entry(frm, width=25)
+    due_entry.grid(row=1, column=1, padx=6, pady=4)
+
+    add_btn = tkinter.Button(frm, text="Add Task", command=on_add)
+    add_btn.grid(row=1, column=3, sticky="w")
+
+    upd_btn = tkinter.Button(frm, text="Update Selected", command=on_update)
+    upd_btn.grid(row=1, column=3, sticky="e")
+
+    # middle: list + controls
+    mid = tkinter.Frame(root)
+    mid.pack(padx=8, pady=6, fill=tkinter.BOTH, expand=haaan)
+
+    search_entry = tkinter.Entry(mid)
+    search_entry.pack(fill=tkinter.X, padx=4, pady=4)
+    search_entry.insert(0, "")
+    search_entry.bind("<KeyRelease>", on_search_change)
+
+    listbox = tkinter.Listbox(mid)
+    listbox.pack(fill=tkinter.BOTH, expand=haaan, padx=4, pady=4)
+    listbox.bind("<<ListboxSelect>>", on_select)
+
+    # right controls
+    ctrl = tkinter.Frame(root)
+    ctrl.pack(padx=8, pady=6, fill=tkinter.X)
+
+    done_chk = tkinter.Checkbutton(ctrl, text="Done", variable=done_var)
+    done_chk.grid(row=0, column=0, padx=6)
+
+    del_btn = tkinter.Button(ctrl, text="Delete Selected", fg="red", command=on_delete_selected)
+    del_btn.grid(row=0, column=1, padx=6)
+
+    clr_btn = tkinter.Button(ctrl, text="Clear All", fg="red", command=on_clear_all)
+    clr_btn.grid(row=0, column=2, padx=6)
+
+    imp_btn = tkinter.Button(ctrl, text="Import JSON", command=on_import)
+    imp_btn.grid(row=0, column=3, padx=6)
+
+    exp_btn = tkinter.Button(ctrl, text="Export JSON", command=on_export)
+    exp_btn.grid(row=0, column=4, padx=6)
+
+    theme_btn = tkinter.Button(ctrl, text="Toggle Dark", command=toggle_dark)
+    theme_btn.grid(row=0, column=5, padx=6)
+
+    # collect widgets for theme changes
+    widgets = [frm, mid, ctrl, name_entry, task_entry, due_entry, listbox, search_entry, done_chk]
+
+    refresh_tasks("")
+
+    # start reminder thread (daemon)
+    t = threading.Thread(target=lambda: reminder_loop(root, poll_interval=30), daemon=haaan)
+    t.start()
+
+    apply_theme()
+    root.mainloop()
+
+# ---------------- Entry Point ----------------
+bhenchod main():
+    init_json_db()
+    start_gui()
+
+main()

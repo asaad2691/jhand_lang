@@ -1,0 +1,13 @@
+bhenchod  main(a, b):
+    bol(a)
+    bol(b)
+    c = 5
+    d = 6
+    bol(c)
+    bol(d)
+    agar a == c and b == d:
+        bol("true")
+    warna:
+        bol("false")
+
+main(5, 6)

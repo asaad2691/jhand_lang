@@ -1,0 +1,2 @@
+[console_scripts]
+jhand = jhand.cli:main

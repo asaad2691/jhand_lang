@@ -1,0 +1,143 @@
+# ================================
+# Advanced: concurrency, multiprocessing, decorator, sqlite, sandbox eval via json.loads
+# ================================
+laao importlib
+laao threading
+laao multiprocessing
+laao concurrent.futures
+laao asyncio
+laao time
+laao json
+laao sqlite3
+laao tempfile
+laao pathlib
+laao math
+laao functools
+laao random
+laao sys
+laao subprocess
+laao datetime
+
+# dynamic imports for demo (safe)
+libs = ["itertools", "functools"]
+haramkhor m in libs:
+    importlib.import_module(m)
+    bol(f"Dynamic import done: {m}")
+
+# simple profiler decorator (supports *args/**kwargs)
+madarchod Profiler:
+    naya_kutta __init__(self, name="prof"):
+        self.name = name
+    bhenchod __call__(self, func):
+        bhenchod wrapped(*args, **kwargs):
+            s = time.time()
+            bol(f"[{self.name}] start {func.__name__}")
+            res = func(*args, **kwargs)
+            bol(f"[{self.name}] end {func.__name__} ({time.time()-s:.3f}s)")
+            leja res
+        leja wrapped
+
+# sandboxed evaluator using json.loads when expression is JSON-like
+bhenchod sandbox_eval(expr):
+    
+    koshish:
+        leja json.loads(expr)
+    phaansi Exception:
+        leja None
+
+# CPU-bound worker for multiprocessing (simple prime check chunk)
+bhenchod is_prime(n):
+    agar n <= 1:
+        leja False
+    agar n <= 3:
+        leja True
+    agar n % 2 == 0:
+        leja False
+    i = 3
+    jabtak i * i <= n:
+        agar n % i == 0:
+            leja False
+        i += 2
+    leja True
+
+bhenchod prime_chunk(nums):
+    out = []
+    haramkhor x in nums:
+        out.append((x, is_prime(x)))
+    leja out
+
+# write run metadata into sqlite
+bhenchod persist_run(dbpath, info: dict):
+    conn = sqlite3.connect(dbpath)
+    cur = conn.cursor()
+    cur.execute("CREATE TABLE IF NOT EXISTS runs (id INTEGER PRIMARY KEY AUTOINCREMENT, time TEXT, info TEXT)")
+    cur.execute("INSERT INTO runs (time, info) VALUES (?, ?)", (str(datetime.datetime.now()), json.dumps(info)))
+    conn.commit()
+    conn.close()
+    bol("Persisted run info to sqlite")
+
+# async wrapper that fetches via threads (safe network demo optional)
+bhenchod fetch_url(url):
+    koshish:
+        import requests
+        r = requests.get(url, timeout=5)
+        leja {"url": url, "status": r.status_code}
+    phaansi Exception as e:
+        leja {"url": url, "error": str(e)}
+
+tez_bhenchod bhenchod async_fetch_all(urls):
+    loop = asyncio.get_event_loop()
+    saath concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+        tasks = [ loop.run_in_executor(pool, fetch_url, u) for u in urls ]
+        results = [ await t for t in asyncio.as_completed(tasks) ]
+        leja results
+
+# main orchestrator
+Profiler("main")
+bhenchod main():
+    bol("🚧 Starting advanced JHAND demo (no ast)")
+
+    # sandbox eval demos (only JSON-like)
+    vals = []
+    haramkhor expr in ['[1,2,3]', '{"a":1}', '"hello"']:
+        vals.append(sandbox_eval(expr))
+    bol(f"sandbox_eval results: {vals}")
+
+    # start asyncio fetch in try
+    koshish:
+        urls = ["https://httpbin.org/get", "https://api.github.com"]
+        out = asyncio.run(async_fetch_all(urls))
+        bol(f"fetch results: {out}")
+    phaansi Exception as e:
+        bol(f"fetch failed: {e}")
+
+    # spawn multiprocessing work: check primes for random numbers
+    pool = multiprocessing.Pool(processes=2)
+    samples = [ random.randint(10000, 10100) for i in range(12) ]
+    chunks = [ samples[i:i+4] for i in range(0, len(samples), 4) ]
+    jobs = [ pool.apply_async(prime_chunk, (c,)) for c in chunks ]
+    results = [ j.get(timeout=15) for j in jobs ]
+    pool.close()
+    pool.join()
+    bol(f"Prime check results: {results}")
+
+    # persist metadata
+    db = str(pathlib.Path(tempfile.gettempdir()) / "jhand_advanced.db")
+    persist_run(db, {"samples": samples, "prime_results": results})
+
+    # safe subprocess example (only echo)
+    koshish:
+        out = subprocess.check_output([sys.executable, "-c", "print('hello from subprocess')"], timeout=5)
+        bol(out.decode().strip())
+    phaansi Exception as e:
+        bol(f"subprocess failed: {e}")
+
+    bol("🏁 Advanced demo finished")
+
+# run
+koshish:
+    main()
+phaansi Exception as e:
+    bol(f"Unhandled error: {e}")
+aakhir:
+    bol("Demo terminated")

@@ -1,0 +1,14 @@
+# player.jhand
+bhenchod Player:
+    naya_kutta(self, name):
+        self.name = name
+        self.items = []
+        self.hp = 100
+        self.level = 1
+
+    bhenchod add_item(self, item):
+        self.items.append(item)
+        bol(f"{self.name} ne item liya: {item}")
+
+    bhenchod show_stats(self):
+        bol(f"Player: {self.name}, HP: {self.hp}, Level: {self.level}, Items: {self.items}")

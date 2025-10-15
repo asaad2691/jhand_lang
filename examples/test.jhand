@@ -1,0 +1,107 @@
+# ================================
+# 📚 Libraries Import
+# ================================
+laao numpy as np
+laao pandas as pd
+laao matplotlib.pyplot as plt
+laao requests
+laao random
+laao datetime
+
+# ================================
+# 🧍 Class Example (Player)
+# ================================
+madarchod Player:
+    naya_kutta __init__(self, name):
+        self.name = name
+        self.hp = 100
+        self.inventory = []
+        self.joined = datetime.datetime.now()
+
+    bhenchod add_item(self, item):
+        self.inventory.append(item)
+        bol(f"{self.name} ne item liya: {item}")
+
+    bhenchod stats(self):
+        bol(f"--- {self.name} Stats ---")
+        bol(f"HP: {self.hp}")
+        bol(f"Inventory: {self.inventory}")
+        bol(f"Joined: {self.joined}")
+
+# ================================
+# 🧠 Function: Fibonacci (Recursion)
+# ================================
+bhenchod fib(n):
+    agar n <= 1:
+        leja n
+    warna:
+        leja fib(n-1) + fib(n-2)
+
+# ================================
+# 🧪 User Input + Try Catch
+# ================================
+jabtak haaan:
+    koshish:
+        count = dimag_laga("Enter number of fib terms (5-15): ")
+        count = int(count)
+        agar count < 5 ya count > 15:
+            utha ValueError("Range se bahar!")
+        nikalja
+    phaansi ValueError:
+        bol("Galat number bey 😡 Dobara de!")
+
+# ================================
+# 📈 Generate Fibonacci Series
+# ================================
+fib_list = []
+haramkhor i in range(0, count):
+    fib_list.append(fib(i))
+bol(f"Fibonacci Series: {fib_list}")
+
+# ================================
+# 🧮 Numpy + Pandas
+# ================================
+numbers = np.random.randint(10, 100, size=10)
+df = pd.DataFrame({"Numbers": numbers,"Squared": numbers*2,"Cubic": numbers*3})
+bol(f"DataFrame:\n{df}")
+
+# ================================
+# 🎨 Plotting Graph
+# ================================
+plt.figure(figsize=(6,4))
+plt.plot(df["Numbers"], df["Squared"], label="Squared")
+plt.plot(df["Numbers"], df["Cubic"], label="Cubic")
+plt.legend()
+plt.title("Number Transformations")
+plt.savefig("advanced_plot.png")
+bol("Plot saved as advanced_plot.png 🖼️")
+
+# ================================
+# 🌐 API Call (Bitcoin price)
+# ================================
+koshish:
+    resp = requests.get("https://api.coindesk.com/v1/bpi/currentprice.json")
+    data = resp.json()
+    price = data["bpi"]["USD"]["rate"]
+    bol(f"Bitcoin Price: ${price}")
+phaansi requests.exceptions.RequestException:
+    bol("API call me l lag gayi 🤯")
+aakhir:
+    bol("API call khatam ✅")
+
+# ================================
+# 🧠 Player Object Usage
+# ================================
+player = Player("SaadBoss")
+player.add_item("Sword 🗡️")
+player.add_item("Potion 🍾")
+player.stats()
+
+# ================================
+# 🔥 Conditional + Loop Combo
+# ================================
+haramkhor n in numbers:
+    agar n % 2 == 0:
+        bol(f"{n} even number hai 🟦")
+    warna:
+        bol(f"{n} odd number hai 🟥")

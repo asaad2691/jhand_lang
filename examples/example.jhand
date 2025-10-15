@@ -1,0 +1,49 @@
+# ================================
+# 🧠 Libraries import
+# ================================
+laao math
+laao random
+laao datetime
+laao os
+
+# ================================
+# 🎮 Game Function
+# ================================
+bhenchod game_chalao():
+    bol("🎮 Game Start ho gaya BC!")
+    secret = random.randint(1, 10)
+    attempts = 0
+    jabtak haaan:
+        guess = int(dimag_laga("1 se 10 ke beech number soch aur likh: "))
+        attempts = attempts + 1
+
+        agar guess == secret:
+            bol("🎉 Sahi pakde hain BSDK!")
+            leja attempts
+        warna agar guess < secret:
+            bol("⬆️ Thoda bada soch lawde")
+        warna:
+            bol("⬇️ Zyada ud mat, chhota number le")
+
+# ================================
+# 📝 Result save karne ka function
+# ================================
+bhenchod result_save(attempts):
+    abhi = datetime.datetime.now()
+    file_name = "game_log.txt"
+    with open(file_name, "a") as f:
+        f.write(f"Game {abhi}: {attempts} attempts mein jeet gaya 📝\n")
+    bol(f"📁 Result '{file_name}' mein save ho gaya")
+
+# ================================
+# 🧠 MAIN PROGRAM
+# ================================
+bol("JHAND Number Guess Game 🤡")
+
+tries = game_chalao()
+
+bol(f"Tune {tries} attempts mein jeet liya 🏆")
+
+result_save(tries)
+
+bol("👋 Game Khatam, chal nikal BC")
