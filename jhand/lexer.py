@@ -21,12 +21,13 @@ class Token:
 # ==============================
 _TOKEN_SPEC = [
     ("NUMBER",   r"\d+(\.\d+)?"),  # integers and floats
-    ("STRING",   r"(?:[fFrRbB]{0,2})(\"([^\"\\]|\\.)*\"|'([^'\\]|\\.)*')"),  # f/r/b strings
-    ("NAME",     r"[A-Za-z_][A-Za-z0-9_]*"),  # identifiers
+    ("STRING",   r"(?:[fFrRbB]{0,2})(\"\"\"[\s\S]*?\"\"\"|'''[\s\S]*?'''|\"([^\"\\]|\\.)*\"|'([^'\\]|\\.)*')"),
+    ("NAME",     r"[^\W\d_][\w]*"),  # unicode identifiers allowed
     ("NEWLINE",  r"\n"),  # newline
     ("SKIP",     r"[ \t]+"),  # spaces/tabs
     ("COMMENT",  r"#.*"),  # python style comment
-    ("OP",       r"\*\*|\+=|-=|\*=|/=|==|!=|<=|>=|=|\+|-|\*|/|%|<|>|\(|\)|:|,|\.|\[|\]|\{|\}"),
+    # Expanded operators for modern Python
+    ("OP", r"\*\*=|//=|==|!=|<=|>=|:=|->|\*\*|\+=|-=|\*=|/=|//|=|\+|-|\*|/|%|<|>|\(|\)|:|,|\.|\[|\]|\{|\}|@"),
     ("MISMATCH", r"."),  # catch-all for unexpected
 ]
 
@@ -69,6 +70,18 @@ KEYWORD_MAP = {
     "ya": "or",
     "nahi": "not",
     "tez_bhenchod": "async",
+    # extra fun keywords
+    "agar_na_mana": "elif",
+    "bas_kar": "break",
+    "phir_se": "continue",
+    "sun_bsdk": "print",
+    "gand_faad_ke": "exec",
+    "puch_bsdk": "input",
+    "likh_le": "with",
+    "sahi": "True",
+    "galat": "False",
+    "khaali": "None",
+    "chalao": "for",
 }
 
 # ==============================

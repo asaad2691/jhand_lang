@@ -20,7 +20,7 @@ bhenchod game_chalao():
         agar guess == secret:
             bol("🎉 Sahi pakde hain BSDK!")
             leja attempts
-        warna agar guess < secret:
+        ele guess < secret:
             bol("⬆️ Thoda bada soch lawde")
         warna:
             bol("⬇️ Zyada ud mat, chhota number le")
