@@ -182,6 +182,3 @@ gh repo star asaad2691/jhand_lang
 > 🧠 **Pro Tip:** JHAND code is 100% valid Python after transpilation —  
 > aap transpiled file ko `.py` mein dump karke VSCode mein debug bhi kar sakte ho like a boss 😎
 
----
-
-Agar chaaho to main isey `.html` ke liye bhi format kar sakta hoon — sirf readable content ke saath, bina kisi tag ke. Batao kis format mein chahiye: `.txt` ke liye ready hai, aur agar HTML chahiye to batao kis style mein render karna hai (e.g. monospace, sectioned, etc).

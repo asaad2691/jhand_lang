@@ -1,0 +1,34 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+.env/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+
+# PyInstaller
+*.spec
+
+# VSCode settings
+.vscode/
+
+# Logs
+*.log
+*.txt
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Local JSON data (temporary / dev only)
+tasks.json
+task2.json
+jhand_test.json
+*.temp.json
