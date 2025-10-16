@@ -2,7 +2,6 @@ LICENSE
 README.md
 setup.py
 examples/__init__.py
-examples/hello.py
 jhand/__init__.py
 jhand/astnode.py
 jhand/cli.py

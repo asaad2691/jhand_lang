@@ -8,25 +8,20 @@ import re
 # -------------------------
 # UTF-8 Console & File patch
 # -------------------------
-sys.stdout.reconfigure(encoding='utf-8')
-sys.stderr.reconfigure(encoding='utf-8')
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+except Exception:
+    # Kuch environments mein reconfigure nahi hota (e.g. Windows old PowerShell)
+    pass
 
 _builtin_open = open
 
 def utf8_open(*args, **kwargs):
-    # Mode determine karo
-    mode = None
-    if len(args) > 1:
-        mode = args[1]
-    elif "mode" in kwargs:
-        mode = kwargs["mode"]
-    else:
-        mode = "r"  # default
-
-    # Agar binary mode nahi hai tabhi encoding inject karo
+    """Globally patch open() to default to UTF-8 encoding (non-binary)."""
+    mode = kwargs.get("mode", args[1] if len(args) > 1 else "r")
     if "b" not in mode and "encoding" not in kwargs:
         kwargs["encoding"] = "utf-8"
-
     return _builtin_open(*args, **kwargs)
 
 builtins.open = utf8_open
@@ -127,13 +122,22 @@ def roast(choice_list):
 # Auto Package Installer
 # -------------------------
 def try_auto_install(module_name: str):
-    """Try to install a missing module using pip"""
+    """Try to install a missing module using pip."""
     print(f"📦 Auto-Installer: '{module_name}' dhoond liya. Installing via pip... 🚀")
     try:
         subprocess.check_call([sys.executable, "-m", "pip", "install", module_name])
         print(f"✅ '{module_name}' install ho gaya bhai! Code dobara chala ke dekh 😎")
     except Exception as e:
         print(f"❌ Auto install fail ho gaya for '{module_name}' 😭 — {e}")
+
+# -------------------------
+# Builtins for JHAND
+# -------------------------
+def bol(*args, **kwargs):
+    """JHAND's desi print()"""
+    print(*args, **kwargs)
+
+builtins.bol = bol
 
 # -------------------------
 # Main JHAND runner
@@ -149,7 +153,7 @@ def run_jhand(source_code: str, filename="<jhand>"):
         print(f"📍 Line: {se.lineno}, Char: {se.offset}")
         print(f"📝 Text: {se.text.strip() if se.text else 'Empty'}")
         print(f"⚠️ Python Error: {se.msg}")
-        print("💡 Possible Fix: Check indentation, missing colons, or invalid expressions.")
+        print("💡 Possible Fix: Check indentation, missing colons, ya galat likhi expression.")
         return
 
     # 🧠 Runtime Error Roast (Detailed)
@@ -174,7 +178,6 @@ def run_jhand(source_code: str, filename="<jhand>"):
                 module_name = match.group(1)
                 print(f"🧠 Roast: {roast(EXCEPTION_HANDLERS['ImportError'][0])}")
                 print(f"🛠️ Fix: pip install {module_name}")
-                # Optional: Auto install the missing package
                 try_auto_install(module_name)
             else:
                 print("🧠 Roast: ImportError aaya lekin module naam pakad nahi paya 😅")
@@ -204,6 +207,7 @@ def run_code(source_code: str, filename="<jhand>"):
 # -------------------------
 if __name__ == "__main__":
     sample = """
+bol("Salaam duniya 👋")
 import kuch_bhi_nahi  # Non-existent lib to trigger auto install
 bol(1 / 0)
 """

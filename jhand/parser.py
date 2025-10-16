@@ -2,6 +2,7 @@ from typing import List, Optional
 from .lexer import Token
 from .astnode import ASTNode
 
+
 class Parser:
     def __init__(self, tokens: List[Token]):
         self.tokens = tokens
@@ -34,12 +35,12 @@ class Parser:
             program.children.append(self.parse_statement(0))
         return program
 
-    # ------------------------ PARSE STATEMENT ------------------------
+    # ------------------------ STATEMENT ------------------------
     def parse_statement(self, parent_indent: int) -> ASTNode:
         tok = self.current()
         if tok.type == "NAME":
             if tok.value == "def":
-                return self.parse_function(parent_indent, is_async=False)
+                return self.parse_function(parent_indent)
             if tok.value == "async":
                 self.eat("NAME")
                 if self.current().value != "def":
@@ -47,66 +48,63 @@ class Parser:
                 return self.parse_function(parent_indent, is_async=True)
             if tok.value == "class":
                 return self.parse_class(parent_indent)
-            if tok.value == "print":
+            if tok.value == "print" or tok.value == "bol":
                 return self.parse_print()
             if tok.value in ("if", "elif", "else", "while", "for", "try", "except", "finally", "with"):
                 return self.parse_block(parent_indent)
-        if tok.type == "NAME" and tok.value in ("import", "from"):
-            return self.parse_import()
+            if tok.value in ("import", "from"):
+                return self.parse_import()
         return self.parse_expr()
-    # ------------------------ PARSE import ------------------------
 
+    # ------------------------ IMPORT ------------------------
     def parse_import(self) -> ASTNode:
-        # Handle plain: import module [as alias]
-        if self.current().value == "import":
+        if self.current().type == "NAME" and self.current().value == "import":
             self.eat("NAME")
-            module_parts = [self.eat("NAME").value]
+            parts = [self.eat("NAME").value]
             while self.current().type == "OP" and self.current().value == ".":
                 self.eat("OP", ".")
-                module_parts.append(self.eat("NAME").value)
-            module = ".".join(module_parts)
+                parts.append(self.eat("NAME").value)
+            module = ".".join(parts)
 
             alias = None
             if self.current().type == "NAME" and self.current().value == "as":
-                self.eat("NAME", "as")
+                self.eat("NAME")
                 alias = self.eat("NAME").value
 
             if self.current().type == "NEWLINE":
                 self.eat("NEWLINE")
             return ASTNode("Import", value={"module": module, "symbols": [], "alias": alias})
 
-        # Handle: from module import x [as y], x2, x3 ...
-        if self.current().value == "from":
-            self.eat("NAME")  # from
-            module_parts = [self.eat("NAME").value]
+        if self.current().type == "NAME" and self.current().value == "from":
+            self.eat("NAME")
+            parts = []
             while self.current().type == "OP" and self.current().value == ".":
-                self.eat("OP", ".")
-                module_parts.append(self.eat("NAME").value)
-            module = ".".join(module_parts)
+                parts.append(self.eat("OP").value)
+            if self.current().type == "NAME":
+                parts.append(self.eat("NAME").value)
+                while self.current().type == "OP" and self.current().value == ".":
+                    self.eat("OP", ".")
+                    parts.append(self.eat("NAME").value)
+            module = "".join(parts)
 
             self.eat("NAME")  # import
             symbols = []
-            while self.current().type == "NAME":
-                sym_name = self.eat("NAME").value
-                alias = None
+            while self.current().type not in ("NEWLINE", "EOF"):
+                name = self.eat("NAME").value
+                as_alias = None
                 if self.current().type == "NAME" and self.current().value == "as":
-                    self.eat("NAME", "as")
-                    alias = self.eat("NAME").value
-                    sym_name = f"{sym_name} as {alias}"
-                symbols.append(sym_name)
+                    self.eat("NAME")
+                    as_alias = self.eat("NAME").value
+                symbols.append((name, as_alias))
                 if self.current().type == "OP" and self.current().value == ",":
                     self.eat("OP", ",")
-
             if self.current().type == "NEWLINE":
                 self.eat("NEWLINE")
+            return ASTNode("Import", value={"module": module, "symbols": symbols})
 
-            return ASTNode("Import", value={"module": module, "symbols": symbols, "alias": None})
-
-        raise SyntaxError("Invalid import syntax")
-
-    # ------------------------ PARSE PRINT ------------------------
+    # ------------------------ PRINT ------------------------
     def parse_print(self) -> ASTNode:
-        self.eat("NAME")  # print
+        self.eat("NAME")
         content = self._collect_paren_or_string()
         if self.current().type == "NEWLINE":
             self.eat("NEWLINE")
@@ -124,7 +122,7 @@ class Parser:
             return self.eat("STRING").value
         raise SyntaxError("Invalid print content")
 
-    # ------------------------ PARSE EXPRESSION ------------------------
+    # ------------------------ EXPRESSION ------------------------
     def parse_expr(self) -> ASTNode:
         parts = []
         while self.current().type not in ("NEWLINE", "EOF"):
@@ -135,7 +133,7 @@ class Parser:
 
     # ------------------------ FUNCTION ------------------------
     def parse_function(self, parent_indent: int, is_async: bool = False) -> ASTNode:
-        self.eat("NAME")  # def
+        self.eat("NAME")
         name = self.eat("NAME").value
         params = ""
         if self.current().type == "OP" and self.current().value == "(":
@@ -154,7 +152,7 @@ class Parser:
 
     # ------------------------ CLASS ------------------------
     def parse_class(self, parent_indent: int) -> ASTNode:
-        self.eat("NAME")  # class
+        self.eat("NAME")
         name = self.eat("NAME").value
         if self.current().type == "OP" and self.current().value == ":":
             self.eat("OP", ":")
@@ -171,30 +169,19 @@ class Parser:
         if self.current().type == "NEWLINE":
             self.eat("NEWLINE")
         header = " ".join(header_parts).strip()
-
-        if header.startswith("koshish"):  # try
-            children = self._parse_body(self.current().col + 4)
-        elif header.startswith("phaansi") or header.startswith("aakhir"):  # except/finally
-            children = self._parse_body(parent_indent + 4)
-        else:
-            children = self._parse_body(self.current().col)
-
+        children = self._parse_body(self.current().col)
         return ASTNode("Block", value={"header": header}, children=children)
 
-    # ------------------------ PARSE BODY ------------------------
-    def _parse_body(self, body_indent: int) -> List[ASTNode]:
+    # ------------------------ BODY ------------------------
+    def _parse_body(self, body_indent: int):
         children = []
         while self.current().type != "EOF":
             tok = self.current()
-
             if tok.type == "NEWLINE":
                 self.eat("NEWLINE")
                 continue
-
             if tok.col < body_indent:
                 break
-
             stmt_node = self.parse_statement(body_indent)
             children.append(stmt_node)
-
         return children
