@@ -1,6 +1,8 @@
+LICENSE
 README.md
 setup.py
 jhand/__init__.py
+jhand/astnode.py
 jhand/cli.py
 jhand/lexer.py
 jhand/parser.py

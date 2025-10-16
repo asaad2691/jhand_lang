@@ -1,8 +1,10 @@
-# jhand/lexer.py
 import re
 from dataclasses import dataclass
 from typing import List
 
+# ==============================
+# Token class
+# ==============================
 @dataclass
 class Token:
     type: str
@@ -13,21 +15,25 @@ class Token:
     def __repr__(self):
         return f"<{self.type}('{self.value}') @{self.line}:{self.col}>"
 
+
 # ==============================
-# Token specifications
+# Token specifications (regex)
 # ==============================
 _TOKEN_SPEC = [
     ("NUMBER",   r"\d+(\.\d+)?"),  # integers and floats
-    ("STRING",   r"(?:[fF]?|[rR]?|[bB]?|[frFR]?|[rbRB]?)(\"([^\"\\]|\\.)*\"|'([^'\\]|\\.)*')"),  # f-strings + normal strings
+    ("STRING",   r"(?:[fFrRbB]{0,2})(\"([^\"\\]|\\.)*\"|'([^'\\]|\\.)*')"),  # f/r/b strings
     ("NAME",     r"[A-Za-z_][A-Za-z0-9_]*"),  # identifiers
-    ("NEWLINE",  r"\n"),
-    ("SKIP",     r"[ \t]+"),
-    ("COMMENT",  r"#.*"),
-    ("OP", r"\*\*|\+=|-=|\*=|/=|==|!=|<=|>=|=|\+|-|\*|/|%|<|>|\(|\)|:|,|\.|\[|\]|\{|\}"),
-    ("MISMATCH", r"."),  # catch-all
+    ("NEWLINE",  r"\n"),  # newline
+    ("SKIP",     r"[ \t]+"),  # spaces/tabs
+    ("COMMENT",  r"#.*"),  # python style comment
+    ("OP",       r"\*\*|\+=|-=|\*=|/=|==|!=|<=|>=|=|\+|-|\*|/|%|<|>|\(|\)|:|,|\.|\[|\]|\{|\}"),
+    ("MISMATCH", r"."),  # catch-all for unexpected
 ]
 
-_TOKEN_RE = re.compile("|".join(f"(?P<{name}>{pattern})" for name, pattern in _TOKEN_SPEC), re.MULTILINE)
+_TOKEN_RE = re.compile(
+    "|".join(f"(?P<{name}>{pattern})" for name, pattern in _TOKEN_SPEC),
+    re.MULTILINE
+)
 
 # ==============================
 # JHAND → Python keyword mapping
@@ -72,6 +78,7 @@ class Lexer:
     def __init__(self, text: str):
         self.text = text
         self.line = 1
+        self.col = 0
 
     def tokenize(self) -> List[Token]:
         tokens: List[Token] = []
@@ -79,34 +86,45 @@ class Lexer:
         for mo in _TOKEN_RE.finditer(self.text):
             kind = mo.lastgroup
             value = mo.group()
-            start = mo.start()
-            prev_newline = self.text.rfind("\n", 0, start)
-            col = start - (prev_newline + 1) if prev_newline >= 0 else start
+            start_index = mo.start()
+
+            # calculate current column relative to the last newline
+            prev_newline = self.text.rfind("\n", 0, start_index)
+            col = start_index - (prev_newline + 1) if prev_newline != -1 else start_index
 
             if kind == "NUMBER":
                 tokens.append(Token("NUMBER", value, self.line, col))
+
             elif kind == "STRING":
                 tokens.append(Token("STRING", value, self.line, col))
+
             elif kind == "NAME":
                 mapped = KEYWORD_MAP.get(value, value)
                 tokens.append(Token("NAME", mapped, self.line, col))
+
             elif kind == "NEWLINE":
-                tokens.append(Token("NEWLINE", "\\n", self.line, col))
+                tokens.append(Token("NEWLINE", "\n", self.line, col))
                 self.line += 1
+                self.col = 0  # reset col after newline
+
             elif kind == "SKIP":
-                continue
+                continue  # just ignore spaces
+
             elif kind == "COMMENT":
-                continue
+                continue  # ignore comments too
+
             elif kind == "OP":
                 tokens.append(Token("OP", value, self.line, col))
+
             elif kind == "MISMATCH":
                 raise SyntaxError(f"Unexpected character {value!r} at {self.line}:{col}")
 
         tokens.append(Token("EOF", "", self.line, 0))
         return tokens
 
+
 # ==============================
-# Quick test
+# Quick manual test
 # ==============================
 if __name__ == "__main__":
     sample = '''
@@ -135,5 +153,6 @@ y = {"name": "JHAND", "level": 9000}
 bol(f"Player: {x[0]} {y['name']}")
 '''
     lexer = Lexer(sample)
-    for token in lexer.tokenize():
-        print(token)
+    tokens = lexer.tokenize()
+    for t in tokens:
+        print(t)

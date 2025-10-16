@@ -1,4 +1,5 @@
-from .parser import ASTNode
+from .parser import ASTNode, Parser
+from .lexer import Lexer  # ✅ sahi import
 
 class Transpiler:
     def __init__(self, ast: ASTNode):
@@ -6,16 +7,19 @@ class Transpiler:
         self.lines = []
         self.indent = 0
 
+    # High-level: start transpiling
     def transpile(self) -> str:
         self.visit(self.ast)
         return "\n".join(self.lines)
 
+    # Helper to emit code lines with proper indentation
     def emit(self, line: str):
         if line.strip():
             self.lines.append("    " * self.indent + line.strip())
         else:
             self.lines.append("")
 
+    # Dispatcher: visit node by nodetype
     def visit(self, node: ASTNode):
         if node is None:
             return
@@ -116,3 +120,15 @@ class Transpiler:
             self.visit(c)
         self.indent -= 1
 
+
+# ✅ Module-level transpile function
+def transpile(source_code: str) -> str:
+    """
+    Raw .jhand code → Tokenize → Parse → Transpile → Python code string
+    """
+    lexer = Lexer(source_code)
+    tokens = lexer.tokenize()   # Tokenizer returns token list or lines
+    parser = Parser(tokens)
+    ast = parser.parse()
+    t = Transpiler(ast)
+    return t.transpile()

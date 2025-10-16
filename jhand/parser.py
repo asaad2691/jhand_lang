@@ -8,6 +8,8 @@ class Parser:
         self.pos = 0
 
     def current(self) -> Token:
+        if self.pos >= len(self.tokens):
+            return Token("EOF", "")
         return self.tokens[self.pos]
 
     def lookahead(self, n=1) -> Optional[Token]:
@@ -39,8 +41,7 @@ class Parser:
             if tok.value == "def":
                 return self.parse_function(parent_indent, is_async=False)
             if tok.value == "async":
-                # next token should be def
-                self.eat("NAME")  # async
+                self.eat("NAME")
                 if self.current().value != "def":
                     raise SyntaxError(f"Expected 'def' after 'async', got {self.current().value}")
                 return self.parse_function(parent_indent, is_async=True)
@@ -48,10 +49,8 @@ class Parser:
                 return self.parse_class(parent_indent)
             if tok.value == "print":
                 return self.parse_print()
-            # Blocks: normal + try/catch/finally
             if tok.value in ("if", "elif", "else", "while", "for", "try", "except", "finally", "with"):
                 return self.parse_block(parent_indent)
-        # Default: treat as expression
         return self.parse_expr()
 
     # ------------------------ PARSE PRINT ------------------------
@@ -102,7 +101,6 @@ class Parser:
         children = self._parse_body(self.current().col)
         return ASTNode("Function", value={"name": name, "params": params, "async": is_async}, children=children)
 
-
     # ------------------------ CLASS ------------------------
     def parse_class(self, parent_indent: int) -> ASTNode:
         self.eat("NAME")  # class
@@ -123,7 +121,6 @@ class Parser:
             self.eat("NEWLINE")
         header = " ".join(header_parts).strip()
 
-        # Decide body_indent specially for try/except/finally
         if header.startswith("koshish"):  # try
             children = self._parse_body(self.current().col + 4)
         elif header.startswith("phaansi") or header.startswith("aakhir"):  # except/finally
@@ -143,18 +140,10 @@ class Parser:
                 self.eat("NEWLINE")
                 continue
 
-            # Agar token ka col < body_indent matlab block khatam
             if tok.col < body_indent:
                 break
 
-            # Agar next token except/finally hai, current block ka part nahi
-            # lookahead_val = tok.value if tok.type == "NAME" else ""
-            # if lookahead_val in ("except", "finally"):
-            #     break
-
-            # Normal statement parse karo
             stmt_node = self.parse_statement(body_indent)
             children.append(stmt_node)
-            # print(stmt_node)  # Debug: show AST
 
         return children
