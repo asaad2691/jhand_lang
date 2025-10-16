@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="jhand-lang",
-    version="0.1.0",
+    version="0.2.0",
     author="Sadran",
     author_email="no-reply@jhand-lang.dev",
     description="JHAND Language – Galiyon mein likha, duniya mein chhaya 💥",
