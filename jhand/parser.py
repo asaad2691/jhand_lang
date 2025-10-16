@@ -51,7 +51,58 @@ class Parser:
                 return self.parse_print()
             if tok.value in ("if", "elif", "else", "while", "for", "try", "except", "finally", "with"):
                 return self.parse_block(parent_indent)
+        if tok.type == "NAME" and tok.value in ("import", "from"):
+            return self.parse_import()
         return self.parse_expr()
+    # ------------------------ PARSE import ------------------------
+
+    def parse_import(self) -> ASTNode:
+        # Handle plain: import module [as alias]
+        if self.current().value == "import":
+            self.eat("NAME")
+            module_parts = [self.eat("NAME").value]
+            while self.current().type == "OP" and self.current().value == ".":
+                self.eat("OP", ".")
+                module_parts.append(self.eat("NAME").value)
+            module = ".".join(module_parts)
+
+            alias = None
+            if self.current().type == "NAME" and self.current().value == "as":
+                self.eat("NAME", "as")
+                alias = self.eat("NAME").value
+
+            if self.current().type == "NEWLINE":
+                self.eat("NEWLINE")
+            return ASTNode("Import", value={"module": module, "symbols": [], "alias": alias})
+
+        # Handle: from module import x [as y], x2, x3 ...
+        if self.current().value == "from":
+            self.eat("NAME")  # from
+            module_parts = [self.eat("NAME").value]
+            while self.current().type == "OP" and self.current().value == ".":
+                self.eat("OP", ".")
+                module_parts.append(self.eat("NAME").value)
+            module = ".".join(module_parts)
+
+            self.eat("NAME")  # import
+            symbols = []
+            while self.current().type == "NAME":
+                sym_name = self.eat("NAME").value
+                alias = None
+                if self.current().type == "NAME" and self.current().value == "as":
+                    self.eat("NAME", "as")
+                    alias = self.eat("NAME").value
+                    sym_name = f"{sym_name} as {alias}"
+                symbols.append(sym_name)
+                if self.current().type == "OP" and self.current().value == ",":
+                    self.eat("OP", ",")
+
+            if self.current().type == "NEWLINE":
+                self.eat("NEWLINE")
+
+            return ASTNode("Import", value={"module": module, "symbols": symbols, "alias": None})
+
+        raise SyntaxError("Invalid import syntax")
 
     # ------------------------ PARSE PRINT ------------------------
     def parse_print(self) -> ASTNode:

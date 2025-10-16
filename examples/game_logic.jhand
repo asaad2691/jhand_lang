@@ -1,8 +1,8 @@
 # game_logic.jhand
 se_laao random laao randint
 
-bhenchod Game:
-    naya_kutta(self, players):
+madarchod Game:
+    naya_kutta __init__(self, players):
         self.players = players
 
     bhenchod play_game(self):

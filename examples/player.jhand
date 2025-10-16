@@ -1,6 +1,6 @@
 # player.jhand
-bhenchod Player:
-    naya_kutta(self, name):
+madarchod Player:
+    naya_kutta __init__(self, name):
         self.name = name
         self.items = []
         self.hp = 100

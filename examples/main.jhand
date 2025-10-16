@@ -1,20 +1,6 @@
-# main.jhand
-se_laao player laao Player
-se_laao game_logic laao Game
+# examples/main.jhand
 
-bol("🔥 Welcome to JHAND OOP Game 🔥")
+se_laao examples.hello laao bolowala
 
-player1 = Player("Saad")
-player2 = Player("Ali")
-player3 = Player("Sara")
-
-player1.add_item("Magic Sword")
-player2.add_item("Shield")
-player3.add_item("Potion")
-
-player1.show_stats()
-player2.show_stats()
-player3.show_stats()
-
-g = Game([player1, player2, player3])
-g.play_game()
+bol("Main file se salaam! 🫡")
+bolowala()

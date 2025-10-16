@@ -1,3 +1,6 @@
+import os
+import importlib.util
+import sys
 from .parser import ASTNode, Parser
 from .lexer import Lexer  # ✅ sahi import
 
@@ -28,7 +31,37 @@ class Transpiler:
             return method(node)
         for c in node.children:
             self.visit(c)
+    # ---------------- IMPORT ----------------
 
+    def visit_import(self, node: ASTNode):
+        module_name = node.value.get("module")
+        symbols = node.value.get("symbols", [])
+        alias = node.value.get("alias", None)
+
+        # JHAND files ko transpile karna (same as pehle)
+        jhand_path = module_name.replace(".", os.sep) + ".jhand"
+        if os.path.isfile(jhand_path):
+            build_dir = "__jhand_build__"
+            os.makedirs(build_dir, exist_ok=True)
+            py_out = os.path.join(build_dir, module_name.replace(".", "_") + ".py")
+            with open(jhand_path, "r", encoding="utf-8") as f:
+                src = f.read()
+            from .transpiler import transpile
+            py_code = transpile(src)
+            with open(py_out, "w", encoding="utf-8") as f:
+                f.write(py_code)
+            if build_dir not in sys.path:
+                sys.path.insert(0, build_dir)
+
+        # Actual Python import emit karna
+        if symbols:
+            sym_str = ", ".join(symbols)
+            self.emit(f"from {module_name} import {sym_str}")
+        else:
+            if alias:
+                self.emit(f"import {module_name} as {alias}")
+            else:
+                self.emit(f"import {module_name}")
     # ---------------- Program ----------------
     def visit_program(self, node: ASTNode):
         for c in node.children:

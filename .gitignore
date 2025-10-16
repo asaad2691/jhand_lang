@@ -32,3 +32,6 @@ tasks.json
 task2.json
 jhand_test.json
 *.temp.json
+
+
+__jhand_build__/

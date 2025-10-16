@@ -1,6 +1,10 @@
 import argparse
-import sys
-from . import transpiler  # ya jahan tu ne transpiler rakha hai
+import sys, os
+from . import transpiler
+from . import runtime   # 👈 Add this
+
+# Ensure current dir is on sys.path
+sys.path.insert(0, os.getcwd())
 
 def main():
     parser = argparse.ArgumentParser(prog="jhand", description="🔥 JHAND Language CLI")
@@ -24,8 +28,9 @@ def main():
         print(py_code)
         print("=================================")
     else:
-        # Direct execute
-        exec(py_code, {})
+        # 👇 Yeh line badli hai — direct exec ki jagah runtime runner
+        runtime.run_jhand(py_code, filename=args.file)
+
 
 if __name__ == "__main__":
     main()
