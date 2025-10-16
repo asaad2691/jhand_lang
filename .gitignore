@@ -33,5 +33,7 @@ task2.json
 jhand_test.json
 *.temp.json
 
+advanced_plot.png
+*.temp.png
 
 __jhand_build__/
